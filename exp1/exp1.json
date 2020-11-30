@@ -26,7 +26,7 @@
       },
       "sample": {
         "mode": "draw-shuffle",
-        "n": "1000"
+        "n": "50"
       },
       "files": {
         "rows": []
@@ -46,7 +46,7 @@
           [
             {
               "name": "convertType",
-              "value": "katakana",
+              "value": "hiragana",
               "type": "string"
             }
           ],
@@ -67,13 +67,20 @@
           [
             {
               "name": "prompt",
-              "value": "キーボードを押すと文字が入力されます。 回答の入力を終えたら，「次ヘ」を押してください。 新しい入力欄が表示されます。",
+              "value": "キーボードを押すと文字が入力されます。 回答の入力を終えたら，「Enter」を押すか，「次ヘ」ボタンを押してください。 新しい入力欄が表示されます。",
               "type": "string"
             }
           ],
           [
             {
               "name": "showButton",
+              "value": "true",
+              "type": "boolean"
+            }
+          ],
+          [
+            {
+              "name": "enterEndsTrial",
               "value": "true",
               "type": "boolean"
             }
@@ -116,6 +123,13 @@
               "type": "text",
               "content": "準備ができたら「次へ」を押してください。単語学習を開始します。"
             }
+          ],
+          [
+            {
+              "required": true,
+              "type": "html",
+              "content": "<div class = 'content-horizontal-center'><button>次へ</button></div>"
+            }
           ]
         ]
       },
@@ -147,18 +161,10 @@
         ]
       },
       "messageHandlers": {
-        "rows": [
-          [
-            {
-              "title": "",
-              "message": "before:prepare",
-              "code": "this.options.submitButtonPosition = 'center'"
-            }
-          ]
-        ]
+        "rows": []
       },
       "title": "learningInst",
-      "_tab": "Content",
+      "_tab": "Scripts",
       "skipCondition": "",
       "timeout": "10000"
     },
@@ -189,12 +195,19 @@
               "type": "text",
               "content": "説明をよく読んでいただいた方は「次へ」を押して，実験を開始してください。"
             }
+          ],
+          [
+            {
+              "required": true,
+              "type": "html",
+              "content": "<div class = 'content-horizontal-center'><button>次へ</button></div>"
+            }
           ]
         ]
       },
       "scrollTop": true,
       "submitButtonText": "次へ",
-      "submitButtonPosition": "right",
+      "submitButtonPosition": "hidden",
       "files": {
         "rows": [
           [
@@ -227,15 +240,7 @@
         ]
       },
       "messageHandlers": {
-        "rows": [
-          [
-            {
-              "title": "",
-              "message": "before:prepare",
-              "code": "this.options.submitButtonPosition = 'center'"
-            }
-          ]
-        ]
+        "rows": []
       },
       "title": "instruction",
       "_tab": "Scripts"
@@ -270,7 +275,7 @@
             {
               "required": true,
               "type": "html",
-              "content": "${this.parameters.showButton? '<div class=\"content-horizontal-center\"><button type =\"submit\", form=\"page-form\">次へ</button></div>' : ''}"
+              "content": "${this.parameters.showButton? '<div class=\"content-horizontal-center\"><button>次へ</button></div>' : ''}"
             }
           ]
         ]
@@ -300,17 +305,65 @@
             {
               "title": "hiragana input",
               "message": "before:prepare",
-              "code": "let inputArray =['']\nlet text;\n\n//初期カーソルの点滅用のCSSを追加\nconst css = document.createElement('style')\ncss.media = 'screen'\ncss.type = 'text/css'\n\nconst cssKeyframes ='@keyframes blink{ 0% {opacity: 0} 100% {opacity: 1.0}}';\nconst rules = document.createTextNode(cssKeyframes)\ncss.appendChild(rules)\n\ndocument.getElementsByTagName('head')[0].appendChild(css);\n\n//キー入力時\nthis.options.events['keydown'] = function(e) {\n  if(inputArray.length == 1)\n  {\n    document.getElementById('inputWindow').style.animation = '';\n  }\n  if(e.key == 'Backspace' | e.key.length == 1)\n  {\n    if(e.key == 'Backspace'){\n        inputArray.pop();\n\n    }\n    else if(e.key.length == 1){\n      if(inputArray[1] == '|')\n      {\n        inputArray.pop()\n      }\n      inputArray.push(e.key);\n    }\n    convertText = inputArray.join('');\n    if(this.parameters.convertType == 'katakana')\n    {\n      convertText = wanakana.toKatakana(convertText,{customKanaMapping: {n: 'n', nn:'ン'}});\n    }\n    else\n    {\n      convertText = wanakana.toHiragana(convertText,{customKanaMapping: {n: 'n', nn:'ん'}});\n    }\n    document.getElementById('inputWindow').textContent = convertText;\n    this.data.response = convertText;\n  }\n}"
+              "code": "let inputArray =[]\nlet text;\n\n//初期カーソルの点滅用のCSSを追加\nconst css = document.createElement('style')\ncss.media = 'screen'\ncss.type = 'text/css'\n\nconst cssKeyframes ='@keyframes blink{ 0% {opacity: 0} 100% {opacity: 1.0}}';\nconst rules = document.createTextNode(cssKeyframes)\ncss.appendChild(rules)\n\ndocument.getElementsByTagName('head')[0].appendChild(css);\n\n//キー入力時\nthis.options.events['keydown'] = function(e) {\n  //点滅をやめる\n  if(inputArray.length <= 0)\n  {\n    document.getElementById('inputWindow').style = ' ';\n  }\n  //削除時\n  if(e.key == 'Backspace' || e.key == 'Delete'){\n      //1文字のみの時はカーソルを表示\n      if(inputArray.length == 1)\n      {\n        inputArray =['|']\n        document.getElementById('inputWindow').style = 'animation: blink 0.5s linear infinite alternate;';\n      }\n      else{\n        inputArray.pop();\n      }\n  }\n\n  //押されたキーが1文字の時\n  else if(e.key.length == 1){\n    //最後まで消していた場合\n    if(inputArray[0] == '|')\n    {\n      inputArray.pop()\n      document.getElementById('inputWindow').style = ' ';\n    }\n    inputArray.push(e.key);\n  }\n\n  //Enterの場合は終了\n  else if(this.parameters.enterEndsTrial == true && e.key == 'Enter')\n  {\n    this.end();\n  }\n  //配列を1つにまとめる\n  convertText = inputArray.join('');\n\n  //アルファベットをひらがな/カタカナに変換\n  if(this.parameters.convertType == 'katakana')\n  {\n    convertText = wanakana.toKatakana(convertText, {customKanaMapping: { n: 'n', nn: 'ン'}});\n  }\n  else if(this.parameters.convertType == 'hiragana')\n  {\n    convertText = wanakana.toHiragana(convertText, {customKanaMapping: { n: 'n', nn: 'ん'}});\n  }\n  //変換したテキストを表示\n  document.getElementById('inputWindow').textContent = convertText;\n  //変換したテキストを反応として保存\n  this.data.response = convertText;\n}"
             }
           ]
         ]
       },
       "title": "testTrial",
-      "_tab": "Scripts",
+      "_tab": "Content",
       "timeout": "${this.parameters.trialDuration}"
     },
-    "8": {
-      "id": "8",
+    "9": {
+      "id": "9",
+      "type": "lab.html.Page",
+      "items": {
+        "rows": [
+          [
+            {
+              "type": "text",
+              "content": "これから記憶テストに取り組んでいただきます。先ほど覚えた単語を思い出し，入力欄にキーボードでひらがなで入力してください。10秒経つと自動的に開始します。"
+            }
+          ]
+        ]
+      },
+      "scrollTop": true,
+      "submitButtonText": "次へ",
+      "submitButtonPosition": "hidden",
+      "files": {
+        "rows": []
+      },
+      "responses": {
+        "rows": [
+          [
+            "",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "parameters": {
+        "rows": [
+          [
+            {
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        ]
+      },
+      "messageHandlers": {
+        "rows": []
+      },
+      "title": "testInst",
+      "_tab": "Content",
+      "skipCondition": "",
+      "timeout": "10000"
+    },
+    "10": {
+      "id": "10",
       "type": "lab.canvas.Screen",
       "content": [
         {
@@ -319,9 +372,9 @@
           "originX": "center",
           "originY": "center",
           "left": 0,
-          "top": -25,
-          "width": 576,
-          "height": 162,
+          "top": 0,
+          "width": 199.49,
+          "height": 54.24,
           "fill": "tomato",
           "stroke": null,
           "strokeWidth": 1,
@@ -346,8 +399,8 @@
           "transformMatrix": null,
           "skewX": 0,
           "skewY": 0,
-          "text": "実験終了です！\nご協力ありがとうございました！\n\nウィンドウを閉じて終了してください。",
-          "fontSize": 32,
+          "text": "START！",
+          "fontSize": "48",
           "fontWeight": "normal",
           "fontFamily": "sans-serif",
           "fontStyle": "normal",
@@ -358,7 +411,7 @@
           "textAlign": "center",
           "textBackgroundColor": "",
           "charSpacing": 0,
-          "id": "221",
+          "id": "374",
           "styles": {}
         }
       ],
@@ -401,8 +454,8 @@
           ]
         ]
       },
-      "title": "Thanks",
-      "_tab": "Content",
+      "title": "start",
+      "_tab": "Behavior",
       "timeout": "1000"
     },
     "15": {
@@ -446,15 +499,7 @@
         ]
       },
       "messageHandlers": {
-        "rows": [
-          [
-            {
-              "title": "",
-              "message": "before:prepare",
-              "code": "this.options.submitButtonPosition = 'center'"
-            }
-          ]
-        ]
+        "rows": []
       },
       "title": "mathInst",
       "_tab": "Content",
@@ -836,8 +881,8 @@
           "originY": "center",
           "left": 0,
           "top": -150,
-          "width": 360,
-          "height": 22.6,
+          "width": 300,
+          "height": 48.82,
           "fill": "#000000",
           "stroke": null,
           "strokeWidth": 1,
@@ -862,7 +907,7 @@
           "transformMatrix": null,
           "skewX": 0,
           "skewY": 0,
-          "text": "計算結果が正しいかを判断してください",
+          "text": "計算結果が正しいかを判断し，\nボタンを押して回答してください",
           "fontSize": "20",
           "fontWeight": "normal",
           "fontFamily": "sans-serif",
@@ -972,7 +1017,7 @@
         ]
       },
       "title": "math",
-      "_tab": "Scripts",
+      "_tab": "Content",
       "timeout": "",
       "correctResponse": "${this.parameters.correctResponse}"
     },
@@ -1310,13 +1355,13 @@
             {
               "title": "stimuli",
               "message": "before:prepare",
-              "code": "const list = [];\n\nlist[0] = [\n    '候補者',\n    '投票',\n    '落選',\n    '立候補',\n    '演説',\n    '当選',\n    '参議院',\n    '再選',\n    'うるさい',\n    'ポスター',\n    '選ぶ',\n    '不正',\n    '違反',\n    '買収',\n    '車'\n]\n\nlet assignedList = this.parameters.listno;\n\nfor(i = 0; i < 15; i++)\n{\n    this.options.templateParameters.push({listItem: list[assignedList][i]});\n}\n\nthis.options.sample.mode = 'sequential';\n"
+              "code": "const list = [];\n\nlist[0] = [\n    '候補者',\n    '投票',\n    '落選',\n    '立候補',\n    '演説',\n    '当選',\n    '参議院',\n    '再選',\n    'うるさい',\n    'ポスター',\n    '選ぶ',\n    '不正',\n    '違反',\n    '買収',\n    '車'\n]\n\nlist[1] = [\n    '時間',\n    '時刻',\n    '目覚まし',\n    '時',\n    '秒針',\n    '刻む',\n    '腕',\n    '針',\n    'スイス',\n    '正確',\n    '便利',\n    'バンド',\n    '柱',\n    '動く',\n    '音'\n]\n\nlist[2] = [\n    'ポイント',\n    'チェック',\n    '肝心',\n    '重点',\n    '文化財',\n    '大事',\n    '試験',\n    '大切',\n    '学問',\n    '書類',\n    '必要',\n    '主要',\n    '問題',\n    '事項',\n    '勉強'\n]\n\nlist[3] = [\n    'ワクチン',\n    '接種',\n    '注射',\n    'うがい',\n    'インフルエンザ',\n    '防ぐ',\n    '伝染病',\n    '風邪',\n    '虫歯',\n    '結核',\n    '防止',\n    '防災',\n    '防除',\n    '治療',\n    '検査'\n]\n\nlist[4]  = [\n    'おじぎ',\n    'わきまえる',\n    '作法',\n    '目上',\n    '行儀',\n    '丁寧',\n    '礼',\n    '茶道',\n    '儀礼',\n    '道徳',\n    '不作法',\n    '守る',\n    '正しさ',\n    '礼節',\n    '折り目'\n]\n\nlet assignedList = this.parameters.listno;\n\nfor(i = 0; i < 15; i++)\n{\n    this.options.templateParameters.push({listItem: list[assignedList][i]});\n}\n\nthis.options.sample.mode = 'sequential';\n"
             }
           ]
         ]
       },
       "title": "learningBlock",
-      "_tab": "Scripts"
+      "_tab": "Content"
     },
     "49": {
       "id": "49",
@@ -1562,7 +1607,9 @@
       "type": "lab.flow.Sequence",
       "children": [
         "15",
+        "10",
         "16",
+        "9",
         "1"
       ],
       "files": {
@@ -1603,13 +1650,77 @@
       "title": "mathPhase",
       "_tab": "Behavior"
     },
+    "53": {
+      "id": "53",
+      "type": "lab.flow.Loop",
+      "children": [
+        "54"
+      ],
+      "templateParameters": {
+        "columns": [
+          {
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "rows": []
+      },
+      "sample": {
+        "mode": "draw-shuffle"
+      },
+      "files": {
+        "rows": []
+      },
+      "responses": {
+        "rows": [
+          [
+            "",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      "parameters": {
+        "rows": [
+          [
+            {
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        ]
+      },
+      "messageHandlers": {
+        "rows": [
+          [
+            {
+              "title": "",
+              "message": "before:prepare",
+              "code": "let participantID;\n\n//JATOS以外の場合は参加者番号をランダム生成する\nif (typeof jatos == 'undefined') {\n  participantID = this.random.range(10000, 100000);\n}\n//JATOS利用時は参加者番号にJATOSのWorker IDを置き換える\nelse{\n  participantID = await new Promise((resolve) => {\n    jatos.onLoad(() => resolve(jatos.workerId))\n  })\n}\n\n//作成した(または読み込んだ)参加者番号をlab.jsに読み込む\nthis.options.templateParameters.push({participantID: participantID})"
+            }
+          ]
+        ]
+      },
+      "title": "exp",
+      "_tab": "Content",
+      "plugins": [
+        {
+          "type": "fullscreen",
+          "message": "この実験はフルスクリーンで実施します。準備ができたら，下のボタンを押してください。",
+          "hint": "<button>フルスクリーンを許可する</button>"
+        }
+      ],
+      "tardy": false,
+      "_collapsed": false
+    },
     "54": {
       "id": "54",
       "type": "lab.flow.Sequence",
       "children": [
         "4",
-        "55",
-        "8"
+        "55"
       ],
       "files": {
         "rows": []
@@ -1647,7 +1758,8 @@
         ]
       },
       "title": "expFlow",
-      "_tab": "Content"
+      "_tab": "Content",
+      "_collapsed": false
     },
     "55": {
       "id": "55",
@@ -1665,6 +1777,18 @@
         "rows": [
           [
             "0"
+          ],
+          [
+            "1"
+          ],
+          [
+            "2"
+          ],
+          [
+            "3"
+          ],
+          [
+            "4"
           ]
         ]
       },
@@ -1706,7 +1830,7 @@
           ]
         ]
       },
-      "title": "loop",
+      "title": "blocks",
       "_tab": "Content",
       "_collapsed": false
     },
@@ -1754,7 +1878,7 @@
           ]
         ]
       },
-      "title": "expBlcok",
+      "title": "\\",
       "_collapsed": false,
       "_tab": "Content"
     },
@@ -1763,7 +1887,7 @@
       "title": "root",
       "type": "lab.flow.Sequence",
       "children": [
-        "54"
+        "53"
       ],
       "parameters": {
         "rows": [
@@ -1782,7 +1906,7 @@
         }
       ],
       "metadata": {
-        "title": "memoryExperimetn2020",
+        "title": "false memory",
         "description": "",
         "repository": "",
         "contributors": "Masanori Kobayashi (Yamagata University)"

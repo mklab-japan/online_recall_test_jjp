@@ -10,12 +10,12 @@ const study = lab.util.fromObject({
     },
     {
       "type": "lab.plugins.Download",
-      "filePrefix": "memoryexperimetn2020",
+      "filePrefix": "false-memory",
       "path": undefined
     }
   ],
   "metadata": {
-    "title": "memoryExperimetn2020",
+    "title": "false memory",
     "description": "",
     "repository": "",
     "contributors": "Masanori Kobayashi (Yamagata University)"
@@ -24,148 +24,189 @@ const study = lab.util.fromObject({
   "responses": {},
   "content": [
     {
-      "type": "lab.flow.Sequence",
+      "type": "lab.flow.Loop",
+      "templateParameters": [],
+      "sample": {
+        "mode": "draw-shuffle"
+      },
       "files": {},
       "responses": {},
       "parameters": {},
-      "messageHandlers": {},
-      "title": "expFlow",
-      "content": [
-        {
-          "type": "lab.html.Page",
-          "items": [
-            {
-              "type": "text",
-              "title": "実験にご参加ありがとうございます。",
-              "content": "本実験では，みなさんに様々に単語を覚えていただき，その後，覚えた単語を思い出していただきます。下記のような「単語を覚える」→「計算課題」→「記憶テスト」という流れを1ブロックとし，全部で5ブロックを行っていただきます。"
-            },
-            {
-              "required": true,
-              "type": "image",
-              "width": "",
-              "height": "",
-              "src": "${ this.files[\"inst.001.png\"] }",
-              "name": ""
-            },
-            {
-              "required": true,
-              "type": "text",
-              "content": "説明をよく読んでいただいた方は「次へ」を押して，実験を開始してください。"
-            }
-          ],
-          "scrollTop": true,
-          "submitButtonText": "次へ",
-          "submitButtonPosition": "right",
-          "files": {
-            "inst.001.png": "embedded\u002F3c3debfd0f862e2cd8b74bd5429a56760959056bfb6ba3c435ae0e1cc2442603.png"
-          },
-          "responses": {},
-          "parameters": {},
-          "messageHandlers": {
-            "before:prepare": function anonymous(
+      "messageHandlers": {
+        "before:prepare": async function anonymous(
 ) {
-this.options.submitButtonPosition = 'center'
+let participantID;
+
+//JATOS以外の場合は参加者番号をランダム生成する
+if (typeof jatos == 'undefined') {
+  participantID = this.random.range(10000, 100000);
 }
-          },
-          "title": "instruction"
-        },
+//JATOS利用時は参加者番号にJATOSのWorker IDを置き換える
+else{
+  participantID = await new Promise((resolve) => {
+    jatos.onLoad(() => resolve(jatos.workerId))
+  })
+}
+
+//作成した(または読み込んだ)参加者番号をlab.jsに読み込む
+this.options.templateParameters.push({participantID: participantID})
+}
+      },
+      "title": "exp",
+      "plugins": [
         {
-          "type": "lab.flow.Loop",
-          "templateParameters": [
-            {
-              "listno": "0"
-            }
-          ],
-          "sample": {
-            "mode": "draw-shuffle"
+          "type": "fullscreen",
+          "message": "この実験はフルスクリーンで実施します。準備ができたら，下のボタンを押してください。",
+          "hint": "\u003Cbutton\u003Eフルスクリーンを許可する\u003C\u002Fbutton\u003E",
+          "path": "lab.plugins.Fullscreen"
+        }
+      ],
+      "shuffleGroups": [],
+      "template": {
+        "type": "lab.flow.Sequence",
+        "files": {},
+        "responses": {},
+        "parameters": {},
+        "messageHandlers": {},
+        "title": "expFlow",
+        "content": [
+          {
+            "type": "lab.html.Page",
+            "items": [
+              {
+                "type": "text",
+                "title": "実験にご参加ありがとうございます。",
+                "content": "本実験では，みなさんに様々に単語を覚えていただき，その後，覚えた単語を思い出していただきます。下記のような「単語を覚える」→「計算課題」→「記憶テスト」という流れを1ブロックとし，全部で5ブロックを行っていただきます。"
+              },
+              {
+                "required": true,
+                "type": "image",
+                "width": "",
+                "height": "",
+                "src": "${ this.files[\"inst.001.png\"] }",
+                "name": ""
+              },
+              {
+                "required": true,
+                "type": "text",
+                "content": "説明をよく読んでいただいた方は「次へ」を押して，実験を開始してください。"
+              },
+              {
+                "required": true,
+                "type": "html",
+                "content": "\u003Cdiv class = 'content-horizontal-center'\u003E\u003Cbutton\u003E次へ\u003C\u002Fbutton\u003E\u003C\u002Fdiv\u003E",
+                "name": ""
+              }
+            ],
+            "scrollTop": true,
+            "submitButtonText": "次へ",
+            "submitButtonPosition": "hidden",
+            "files": {
+              "inst.001.png": "embedded\u002F3c3debfd0f862e2cd8b74bd5429a56760959056bfb6ba3c435ae0e1cc2442603.png"
+            },
+            "responses": {},
+            "parameters": {},
+            "messageHandlers": {},
+            "title": "instruction"
           },
-          "files": {},
-          "responses": {},
-          "parameters": {},
-          "messageHandlers": {},
-          "title": "loop",
-          "shuffleGroups": [],
-          "template": {
-            "type": "lab.flow.Sequence",
+          {
+            "type": "lab.flow.Loop",
+            "templateParameters": [
+              {
+                "listno": "0"
+              }
+            ],
+            "sample": {
+              "mode": "draw-shuffle"
+            },
             "files": {},
             "responses": {},
             "parameters": {},
             "messageHandlers": {},
-            "title": "expBlcok",
-            "content": [
-              {
-                "type": "lab.html.Page",
-                "items": [
-                  {
-                    "type": "text",
-                    "content": "これから15単語が各単語1秒ずつ表示されます。単語を覚えてください。後ほど，記憶テストを行いますので，できるだけ努力して覚えてください！",
-                    "title": "これから学習段階をはじめます"
+            "title": "blocks",
+            "shuffleGroups": [],
+            "template": {
+              "type": "lab.flow.Sequence",
+              "files": {},
+              "responses": {},
+              "parameters": {},
+              "messageHandlers": {},
+              "title": "\\",
+              "content": [
+                {
+                  "type": "lab.html.Page",
+                  "items": [
+                    {
+                      "type": "text",
+                      "content": "これから15単語が各単語1秒ずつ表示されます。単語を覚えてください。後ほど，記憶テストを行いますので，できるだけ努力して覚えてください！",
+                      "title": "これから学習段階をはじめます"
+                    },
+                    {
+                      "required": true,
+                      "type": "text",
+                      "content": "準備ができたら「次へ」を押してください。単語学習を開始します。"
+                    },
+                    {
+                      "required": true,
+                      "type": "html",
+                      "content": "\u003Cdiv class = 'content-horizontal-center'\u003E\u003Cbutton\u003E次へ\u003C\u002Fbutton\u003E\u003C\u002Fdiv\u003E",
+                      "name": ""
+                    }
+                  ],
+                  "scrollTop": true,
+                  "submitButtonText": "次へ",
+                  "submitButtonPosition": "hidden",
+                  "files": {},
+                  "responses": {},
+                  "parameters": {},
+                  "messageHandlers": {},
+                  "title": "learningInst",
+                  "timeout": "10000"
+                },
+                {
+                  "type": "lab.canvas.Screen",
+                  "content": [
+                    {
+                      "type": "i-text",
+                      "left": 0,
+                      "top": 0,
+                      "angle": 0,
+                      "width": 199.49,
+                      "height": 54.24,
+                      "stroke": null,
+                      "strokeWidth": 1,
+                      "fill": "tomato",
+                      "text": "START！",
+                      "fontStyle": "normal",
+                      "fontWeight": "normal",
+                      "fontSize": "48",
+                      "fontFamily": "sans-serif",
+                      "lineHeight": 1.16,
+                      "textAlign": "center"
+                    }
+                  ],
+                  "viewport": [
+                    800,
+                    600
+                  ],
+                  "files": {},
+                  "responses": {},
+                  "parameters": {},
+                  "messageHandlers": {},
+                  "title": "start",
+                  "timeout": "1000"
+                },
+                {
+                  "type": "lab.flow.Loop",
+                  "templateParameters": [],
+                  "sample": {
+                    "mode": "draw-shuffle"
                   },
-                  {
-                    "required": true,
-                    "type": "text",
-                    "content": "準備ができたら「次へ」を押してください。単語学習を開始します。"
-                  }
-                ],
-                "scrollTop": true,
-                "submitButtonText": "次へ",
-                "submitButtonPosition": "hidden",
-                "files": {},
-                "responses": {},
-                "parameters": {},
-                "messageHandlers": {
-                  "before:prepare": function anonymous(
-) {
-this.options.submitButtonPosition = 'center'
-}
-                },
-                "title": "learningInst",
-                "timeout": "10000"
-              },
-              {
-                "type": "lab.canvas.Screen",
-                "content": [
-                  {
-                    "type": "i-text",
-                    "left": 0,
-                    "top": 0,
-                    "angle": 0,
-                    "width": 199.49,
-                    "height": 54.24,
-                    "stroke": null,
-                    "strokeWidth": 1,
-                    "fill": "tomato",
-                    "text": "START！",
-                    "fontStyle": "normal",
-                    "fontWeight": "normal",
-                    "fontSize": "48",
-                    "fontFamily": "sans-serif",
-                    "lineHeight": 1.16,
-                    "textAlign": "center"
-                  }
-                ],
-                "viewport": [
-                  800,
-                  600
-                ],
-                "files": {},
-                "responses": {},
-                "parameters": {},
-                "messageHandlers": {},
-                "title": "start",
-                "timeout": "1000"
-              },
-              {
-                "type": "lab.flow.Loop",
-                "templateParameters": [],
-                "sample": {
-                  "mode": "draw-shuffle"
-                },
-                "files": {},
-                "responses": {},
-                "parameters": {},
-                "messageHandlers": {
-                  "before:prepare": function anonymous(
+                  "files": {},
+                  "responses": {},
+                  "parameters": {},
+                  "messageHandlers": {
+                    "before:prepare": function anonymous(
 ) {
 const list = [];
 
@@ -187,6 +228,78 @@ list[0] = [
     '車'
 ]
 
+list[1] = [
+    '時間',
+    '時刻',
+    '目覚まし',
+    '時',
+    '秒針',
+    '刻む',
+    '腕',
+    '針',
+    'スイス',
+    '正確',
+    '便利',
+    'バンド',
+    '柱',
+    '動く',
+    '音'
+]
+
+list[2] = [
+    'ポイント',
+    'チェック',
+    '肝心',
+    '重点',
+    '文化財',
+    '大事',
+    '試験',
+    '大切',
+    '学問',
+    '書類',
+    '必要',
+    '主要',
+    '問題',
+    '事項',
+    '勉強'
+]
+
+list[3] = [
+    'ワクチン',
+    '接種',
+    '注射',
+    'うがい',
+    'インフルエンザ',
+    '防ぐ',
+    '伝染病',
+    '風邪',
+    '虫歯',
+    '結核',
+    '防止',
+    '防災',
+    '防除',
+    '治療',
+    '検査'
+]
+
+list[4]  = [
+    'おじぎ',
+    'わきまえる',
+    '作法',
+    '目上',
+    '行儀',
+    '丁寧',
+    '礼',
+    '茶道',
+    '儀礼',
+    '道徳',
+    '不作法',
+    '守る',
+    '正しさ',
+    '礼節',
+    '折り目'
+]
+
 let assignedList = this.parameters.listno;
 
 for(i = 0; i < 15; i++)
@@ -197,49 +310,125 @@ for(i = 0; i < 15; i++)
 this.options.sample.mode = 'sequential';
 
 }
+                  },
+                  "title": "learningBlock",
+                  "shuffleGroups": [],
+                  "template": {
+                    "type": "lab.flow.Sequence",
+                    "files": {},
+                    "responses": {},
+                    "parameters": {},
+                    "messageHandlers": {},
+                    "title": "learningTrial",
+                    "content": [
+                      {
+                        "type": "lab.canvas.Screen",
+                        "content": [
+                          {
+                            "type": "i-text",
+                            "left": 0,
+                            "top": -2,
+                            "angle": 0,
+                            "width": 23.1,
+                            "height": 36.16,
+                            "stroke": null,
+                            "strokeWidth": 1,
+                            "fill": "black",
+                            "text": "+",
+                            "fontStyle": "normal",
+                            "fontWeight": "normal",
+                            "fontSize": 32,
+                            "fontFamily": "sans-serif",
+                            "lineHeight": 1.16,
+                            "textAlign": "center"
+                          }
+                        ],
+                        "viewport": [
+                          800,
+                          600
+                        ],
+                        "files": {},
+                        "responses": {},
+                        "parameters": {},
+                        "messageHandlers": {},
+                        "title": "fixation",
+                        "timeout": "500"
+                      },
+                      {
+                        "type": "lab.canvas.Screen",
+                        "content": [
+                          {
+                            "type": "i-text",
+                            "left": 0,
+                            "top": 0,
+                            "angle": 0,
+                            "width": 392.42,
+                            "height": 36.16,
+                            "stroke": null,
+                            "strokeWidth": 1,
+                            "fill": "black",
+                            "text": "${this.parameters.listItem}",
+                            "fontStyle": "normal",
+                            "fontWeight": "normal",
+                            "fontSize": 32,
+                            "fontFamily": "sans-serif",
+                            "lineHeight": 1.16,
+                            "textAlign": "center"
+                          }
+                        ],
+                        "viewport": [
+                          800,
+                          600
+                        ],
+                        "files": {},
+                        "responses": {},
+                        "parameters": {},
+                        "messageHandlers": {},
+                        "title": "listItem",
+                        "timeout": "1000"
+                      },
+                      {
+                        "type": "lab.canvas.Screen",
+                        "content": [],
+                        "viewport": [
+                          800,
+                          600
+                        ],
+                        "files": {},
+                        "responses": {},
+                        "parameters": {},
+                        "messageHandlers": {},
+                        "title": "blank",
+                        "timeout": "500"
+                      }
+                    ]
+                  }
                 },
-                "title": "learningBlock",
-                "shuffleGroups": [],
-                "template": {
+                {
                   "type": "lab.flow.Sequence",
                   "files": {},
                   "responses": {},
                   "parameters": {},
                   "messageHandlers": {},
-                  "title": "learningTrial",
+                  "title": "mathPhase",
                   "content": [
                     {
-                      "type": "lab.canvas.Screen",
-                      "content": [
+                      "type": "lab.html.Page",
+                      "items": [
                         {
-                          "type": "i-text",
-                          "left": 0,
-                          "top": -2,
-                          "angle": 0,
-                          "width": 23.1,
-                          "height": 36.16,
-                          "stroke": null,
-                          "strokeWidth": 1,
-                          "fill": "black",
-                          "text": "+",
-                          "fontStyle": "normal",
-                          "fontWeight": "normal",
-                          "fontSize": 32,
-                          "fontFamily": "sans-serif",
-                          "lineHeight": 1.16,
-                          "textAlign": "center"
+                          "type": "text",
+                          "content": "これから計算課題に取り組んでいただきます。画面表示された計算式が正しいかどうかを判断し，ボタンを押して回答してください。10秒経つと自動的に開始します。"
                         }
                       ],
-                      "viewport": [
-                        800,
-                        600
-                      ],
+                      "scrollTop": true,
+                      "submitButtonText": "次へ",
+                      "submitButtonPosition": "hidden",
                       "files": {},
                       "responses": {},
                       "parameters": {},
                       "messageHandlers": {},
-                      "title": "fixation",
-                      "timeout": "500"
+                      "title": "mathInst",
+                      "timeout": "10000"
                     },
                     {
                       "type": "lab.canvas.Screen",
@@ -249,15 +438,15 @@ this.options.sample.mode = 'sequential';
                           "left": 0,
                           "top": 0,
                           "angle": 0,
-                          "width": 392.42,
-                          "height": 36.16,
+                          "width": 199.49,
+                          "height": 54.24,
                           "stroke": null,
                           "strokeWidth": 1,
-                          "fill": "black",
-                          "text": "${this.parameters.listItem}",
+                          "fill": "tomato",
+                          "text": "START！",
                           "fontStyle": "normal",
                           "fontWeight": "normal",
-                          "fontSize": 32,
+                          "fontSize": "48",
                           "fontFamily": "sans-serif",
                           "lineHeight": 1.16,
                           "textAlign": "center"
@@ -271,220 +460,172 @@ this.options.sample.mode = 'sequential';
                       "responses": {},
                       "parameters": {},
                       "messageHandlers": {},
-                      "title": "listItem",
+                      "title": "start",
                       "timeout": "1000"
                     },
                     {
-                      "type": "lab.canvas.Screen",
-                      "content": [],
-                      "viewport": [
-                        800,
-                        600
-                      ],
-                      "files": {},
-                      "responses": {},
-                      "parameters": {},
-                      "messageHandlers": {},
-                      "title": "blank",
-                      "timeout": "500"
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "lab.flow.Sequence",
-                "files": {},
-                "responses": {},
-                "parameters": {},
-                "messageHandlers": {},
-                "title": "mathPhase",
-                "content": [
-                  {
-                    "type": "lab.html.Page",
-                    "items": [
-                      {
-                        "type": "text",
-                        "content": "これから計算課題に取り組んでいただきます。画面表示された計算式が正しいかどうかを判断し，ボタンを押して回答してください。10秒経つと自動的に開始します。"
-                      }
-                    ],
-                    "scrollTop": true,
-                    "submitButtonText": "次へ",
-                    "submitButtonPosition": "hidden",
-                    "files": {},
-                    "responses": {},
-                    "parameters": {},
-                    "messageHandlers": {
-                      "before:prepare": function anonymous(
-) {
-this.options.submitButtonPosition = 'center'
-}
-                    },
-                    "title": "mathInst",
-                    "timeout": "10000"
-                  },
-                  {
-                    "type": "lab.flow.Loop",
-                    "templateParameters": [
-                      {
-                        "correctResponse": false
-                      },
-                      {
-                        "correctResponse": true
-                      }
-                    ],
-                    "sample": {
-                      "mode": "draw-shuffle",
-                      "n": "100"
-                    },
-                    "files": {},
-                    "responses": {},
-                    "parameters": {},
-                    "messageHandlers": {},
-                    "title": "mathBlock",
-                    "timeout": "30000",
-                    "shuffleGroups": [],
-                    "template": {
-                      "type": "lab.flow.Sequence",
-                      "files": {},
-                      "responses": {},
-                      "parameters": {},
-                      "messageHandlers": {},
-                      "title": "mathTrial",
-                      "content": [
+                      "type": "lab.flow.Loop",
+                      "templateParameters": [
                         {
-                          "type": "lab.canvas.Screen",
-                          "content": [
-                            {
-                              "type": "circle",
-                              "left": -225,
-                              "top": 200,
-                              "angle": 0,
-                              "width": 178.01,
-                              "height": 178.01,
-                              "stroke": null,
-                              "strokeWidth": 1,
-                              "fill": "skyblue"
+                          "correctResponse": false
+                        },
+                        {
+                          "correctResponse": true
+                        }
+                      ],
+                      "sample": {
+                        "mode": "draw-shuffle",
+                        "n": "100"
+                      },
+                      "files": {},
+                      "responses": {},
+                      "parameters": {},
+                      "messageHandlers": {},
+                      "title": "mathBlock",
+                      "timeout": "30000",
+                      "shuffleGroups": [],
+                      "template": {
+                        "type": "lab.flow.Sequence",
+                        "files": {},
+                        "responses": {},
+                        "parameters": {},
+                        "messageHandlers": {},
+                        "title": "mathTrial",
+                        "content": [
+                          {
+                            "type": "lab.canvas.Screen",
+                            "content": [
+                              {
+                                "type": "circle",
+                                "left": -225,
+                                "top": 200,
+                                "angle": 0,
+                                "width": 178.01,
+                                "height": 178.01,
+                                "stroke": null,
+                                "strokeWidth": 1,
+                                "fill": "skyblue"
+                              },
+                              {
+                                "type": "aoi",
+                                "left": -225,
+                                "top": 200,
+                                "angle": 0,
+                                "width": 180.86,
+                                "height": 180.78,
+                                "stroke": null,
+                                "strokeWidth": 1,
+                                "fill": "rgba(0, 0, 0, 0.2)",
+                                "label": "falseBtn"
+                              },
+                              {
+                                "type": "circle",
+                                "left": 225,
+                                "top": 200,
+                                "angle": 0,
+                                "width": 178.01,
+                                "height": 178.01,
+                                "stroke": null,
+                                "strokeWidth": 1,
+                                "fill": "gold"
+                              },
+                              {
+                                "type": "i-text",
+                                "left": 225,
+                                "top": 200,
+                                "angle": 0,
+                                "width": 126,
+                                "height": 47.46,
+                                "stroke": null,
+                                "strokeWidth": 1,
+                                "fill": "#ffffff",
+                                "text": "正しい",
+                                "fontStyle": "normal",
+                                "fontWeight": "normal",
+                                "fontSize": "42",
+                                "fontFamily": "sans-serif",
+                                "lineHeight": 1.16,
+                                "textAlign": "center"
+                              },
+                              {
+                                "type": "aoi",
+                                "left": 225,
+                                "top": 200.25,
+                                "angle": 0,
+                                "width": 179.29,
+                                "height": 175.98,
+                                "stroke": null,
+                                "strokeWidth": 1,
+                                "fill": "rgba(0, 0, 0, 0.2)",
+                                "label": "trueBtn"
+                              },
+                              {
+                                "type": "i-text",
+                                "left": 0,
+                                "top": 0,
+                                "angle": 0,
+                                "width": 641.14,
+                                "height": 54.24,
+                                "stroke": "",
+                                "strokeWidth": 0,
+                                "fill": "black",
+                                "text": "${this.parameters.mathText }",
+                                "fontStyle": "normal",
+                                "fontWeight": "normal",
+                                "fontSize": "48",
+                                "fontFamily": "sans-serif",
+                                "lineHeight": 1.16,
+                                "textAlign": "center"
+                              },
+                              {
+                                "type": "i-text",
+                                "left": 0,
+                                "top": -150,
+                                "angle": 0,
+                                "width": 300,
+                                "height": 48.82,
+                                "stroke": null,
+                                "strokeWidth": 1,
+                                "fill": "#000000",
+                                "text": "計算結果が正しいかを判断し，\nボタンを押して回答してください",
+                                "fontStyle": "normal",
+                                "fontWeight": "normal",
+                                "fontSize": "20",
+                                "fontFamily": "sans-serif",
+                                "lineHeight": 1.16,
+                                "textAlign": "center"
+                              },
+                              {
+                                "type": "i-text",
+                                "left": -225,
+                                "top": 200,
+                                "angle": 0,
+                                "width": 84,
+                                "height": 47.46,
+                                "stroke": null,
+                                "strokeWidth": 1,
+                                "fill": "#ffffff",
+                                "text": "誤り",
+                                "fontStyle": "normal",
+                                "fontWeight": "normal",
+                                "fontSize": "42",
+                                "fontFamily": "sans-serif",
+                                "lineHeight": 1.16,
+                                "textAlign": "center"
+                              }
+                            ],
+                            "viewport": [
+                              800,
+                              600
+                            ],
+                            "files": {},
+                            "responses": {
+                              "click @falseBtn": "false",
+                              "click @trueBtn": "true"
                             },
-                            {
-                              "type": "aoi",
-                              "left": -225,
-                              "top": 200,
-                              "angle": 0,
-                              "width": 180.86,
-                              "height": 180.78,
-                              "stroke": null,
-                              "strokeWidth": 1,
-                              "fill": "rgba(0, 0, 0, 0.2)",
-                              "label": "falseBtn"
-                            },
-                            {
-                              "type": "circle",
-                              "left": 225,
-                              "top": 200,
-                              "angle": 0,
-                              "width": 178.01,
-                              "height": 178.01,
-                              "stroke": null,
-                              "strokeWidth": 1,
-                              "fill": "gold"
-                            },
-                            {
-                              "type": "i-text",
-                              "left": 225,
-                              "top": 200,
-                              "angle": 0,
-                              "width": 126,
-                              "height": 47.46,
-                              "stroke": null,
-                              "strokeWidth": 1,
-                              "fill": "#ffffff",
-                              "text": "正しい",
-                              "fontStyle": "normal",
-                              "fontWeight": "normal",
-                              "fontSize": "42",
-                              "fontFamily": "sans-serif",
-                              "lineHeight": 1.16,
-                              "textAlign": "center"
-                            },
-                            {
-                              "type": "aoi",
-                              "left": 225,
-                              "top": 200.25,
-                              "angle": 0,
-                              "width": 179.29,
-                              "height": 175.98,
-                              "stroke": null,
-                              "strokeWidth": 1,
-                              "fill": "rgba(0, 0, 0, 0.2)",
-                              "label": "trueBtn"
-                            },
-                            {
-                              "type": "i-text",
-                              "left": 0,
-                              "top": 0,
-                              "angle": 0,
-                              "width": 641.14,
-                              "height": 54.24,
-                              "stroke": "",
-                              "strokeWidth": 0,
-                              "fill": "black",
-                              "text": "${this.parameters.mathText }",
-                              "fontStyle": "normal",
-                              "fontWeight": "normal",
-                              "fontSize": "48",
-                              "fontFamily": "sans-serif",
-                              "lineHeight": 1.16,
-                              "textAlign": "center"
-                            },
-                            {
-                              "type": "i-text",
-                              "left": 0,
-                              "top": -150,
-                              "angle": 0,
-                              "width": 360,
-                              "height": 22.6,
-                              "stroke": null,
-                              "strokeWidth": 1,
-                              "fill": "#000000",
-                              "text": "計算結果が正しいかを判断してください",
-                              "fontStyle": "normal",
-                              "fontWeight": "normal",
-                              "fontSize": "20",
-                              "fontFamily": "sans-serif",
-                              "lineHeight": 1.16,
-                              "textAlign": "center"
-                            },
-                            {
-                              "type": "i-text",
-                              "left": -225,
-                              "top": 200,
-                              "angle": 0,
-                              "width": 84,
-                              "height": 47.46,
-                              "stroke": null,
-                              "strokeWidth": 1,
-                              "fill": "#ffffff",
-                              "text": "誤り",
-                              "fontStyle": "normal",
-                              "fontWeight": "normal",
-                              "fontSize": "42",
-                              "fontFamily": "sans-serif",
-                              "lineHeight": 1.16,
-                              "textAlign": "center"
-                            }
-                          ],
-                          "viewport": [
-                            800,
-                            600
-                          ],
-                          "files": {},
-                          "responses": {
-                            "click @falseBtn": "false",
-                            "click @trueBtn": "true"
-                          },
-                          "parameters": {},
-                          "messageHandlers": {
-                            "before:prepare": function anonymous(
+                            "parameters": {},
+                            "messageHandlers": {
+                              "before:prepare": function anonymous(
 ) {
 let mathArray = [];
 let mathAnswer = 0;
@@ -507,111 +648,67 @@ if(this.parameters.correctResponse == false)
 const mathText = String(mathArray[0]) + ' + ' + String(mathArray[1]) + ' + ' + String(mathArray[2]) + ' = ' + String(mathAnswer) + ' ?';
 this.parameters.mathText = mathText;
 }
+                            },
+                            "title": "math",
+                            "correctResponse": "${this.parameters.correctResponse}"
                           },
-                          "title": "math",
-                          "correctResponse": "${this.parameters.correctResponse}"
-                        },
-                        {
-                          "type": "lab.canvas.Screen",
-                          "content": [
-                            {
-                              "type": "i-text",
-                              "left": 0,
-                              "top": 0,
-                              "angle": 0,
-                              "width": 738.36,
-                              "height": 67.8,
-                              "stroke": null,
-                              "strokeWidth": 1,
-                              "fill": "tomato",
-                              "text": "${state.correct? '○' : '×'}",
-                              "fontStyle": "normal",
-                              "fontWeight": "bold",
-                              "fontSize": "60",
-                              "fontFamily": "sans-serif",
-                              "lineHeight": 1.16,
-                              "textAlign": "center"
-                            }
-                          ],
-                          "viewport": [
-                            800,
-                            600
-                          ],
-                          "files": {},
-                          "responses": {},
-                          "parameters": {},
-                          "messageHandlers": {},
-                          "title": "feedback",
-                          "timeout": "500",
-                          "tardy": true
-                        },
-                        {
-                          "type": "lab.canvas.Screen",
-                          "content": [],
-                          "viewport": [
-                            800,
-                            600
-                          ],
-                          "files": {},
-                          "responses": {},
-                          "parameters": {},
-                          "messageHandlers": {},
-                          "title": "blank",
-                          "timeout": "500"
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "type": "lab.flow.Loop",
-                    "templateParameters": [
-                      {
-                        "trial": "textInput",
-                        "": ""
+                          {
+                            "type": "lab.canvas.Screen",
+                            "content": [
+                              {
+                                "type": "i-text",
+                                "left": 0,
+                                "top": 0,
+                                "angle": 0,
+                                "width": 738.36,
+                                "height": 67.8,
+                                "stroke": null,
+                                "strokeWidth": 1,
+                                "fill": "tomato",
+                                "text": "${state.correct? '○' : '×'}",
+                                "fontStyle": "normal",
+                                "fontWeight": "bold",
+                                "fontSize": "60",
+                                "fontFamily": "sans-serif",
+                                "lineHeight": 1.16,
+                                "textAlign": "center"
+                              }
+                            ],
+                            "viewport": [
+                              800,
+                              600
+                            ],
+                            "files": {},
+                            "responses": {},
+                            "parameters": {},
+                            "messageHandlers": {},
+                            "title": "feedback",
+                            "timeout": "500",
+                            "tardy": true
+                          },
+                          {
+                            "type": "lab.canvas.Screen",
+                            "content": [],
+                            "viewport": [
+                              800,
+                              600
+                            ],
+                            "files": {},
+                            "responses": {},
+                            "parameters": {},
+                            "messageHandlers": {},
+                            "title": "blank",
+                            "timeout": "500"
+                          }
+                        ]
                       }
-                    ],
-                    "sample": {
-                      "mode": "draw-shuffle",
-                      "n": "1000"
                     },
-                    "files": {},
-                    "responses": {},
-                    "parameters": {
-                      "convertType": "katakana",
-                      "phaseDuration": "120000",
-                      "trialDuration": "Never",
-                      "prompt": "キーボードを押すと文字が入力されます。 回答の入力を終えたら，「次ヘ」を押してください。 新しい入力欄が表示されます。",
-                      "showButton": true
-                    },
-                    "messageHandlers": {},
-                    "title": "testPhase",
-                    "timeout": "${this.parameters.phaseDuration}",
-                    "notes": "半角入力字にひらがなまたはカタカナを画面に表示するテンプレートです。\n\n・convertType：入力された文字の変換先の指定\n　　hiragana→ひらがな入力\n   　 katakana→カタカナ入力\n・phaseDuration：文字入力段階の制限時間\n・trialDuration：個々の試行の制限時間\n・showButton：次へのボタン表示するかどうか*\n・prompt: 教示**\n\n*「次へ」ボタンを表示させる場合は，制限時間まで新しい入力が可能\n**手がかり再生などのpromptを変化させたい場合は「template」のチェックを外し,Templateパラメータのpromptを削除し，contentにpromptという名前で変数を追加したり，不要なパラメータを削除してください。\n\ne.g.30秒の自由再生\nphaseDuration = 30000\nshowButton = true\ntrialDuration = Never\n\ne.g. 6試行で各試行5秒の制限時間の手がかり再生（手がかりは別途parametersとして設定する必要あり。）\nphaseDuration = 30000\nshowButton = false\ntrialDuration = 5000\n\n*****************************************\nJapanseTextInput.json\nCopyright(c) 2020 Masanori Kobayashi\nReleased under the MIT license\n\nInclude WanaKana.js \nhttps:\u002F\u002Fwanakana.com\u002F\nCopyright (c) 2013 WaniKani Community Github\nReleased under the MIT license\n*****************************************",
-                    "shuffleGroups": [],
-                    "template": {
+                    {
                       "type": "lab.html.Page",
                       "items": [
                         {
-                          "required": true,
                           "type": "text",
-                          "title": "先ほど覚えた単語を思い出し，ひらがなで入力してください（制限時間：120秒）。",
-                          "content": "${this.parameters.prompt}"
-                        },
-                        {
-                          "required": true,
-                          "type": "html",
-                          "content": "\u003Cdiv class=\"w-m alert content-horizontal-center\"\u003E\u003Cspan style = \"animation: blink 0.5s linear infinite alternate;\" id=\"inputWindow\"\u003E|\u003C\u002Fspan\u003E\u003C\u002Fdiv\u003E",
-                          "name": ""
-                        },
-                        {
-                          "required": true,
-                          "type": "divider"
-                        },
-                        {
-                          "required": true,
-                          "type": "html",
-                          "content": "${this.parameters.showButton? '\u003Cdiv class=\"content-horizontal-center\"\u003E\u003Cbutton type =\"submit\", form=\"page-form\"\u003E次へ\u003C\u002Fbutton\u003E\u003C\u002Fdiv\u003E' : ''}",
-                          "name": ""
+                          "content": "これから記憶テストに取り組んでいただきます。先ほど覚えた単語を思い出し，入力欄にキーボードでひらがなで入力してください。10秒経つと自動的に開始します。"
                         }
                       ],
                       "scrollTop": true,
@@ -620,10 +717,73 @@ this.parameters.mathText = mathText;
                       "files": {},
                       "responses": {},
                       "parameters": {},
-                      "messageHandlers": {
-                        "before:prepare": function anonymous(
+                      "messageHandlers": {},
+                      "title": "testInst",
+                      "timeout": "10000"
+                    },
+                    {
+                      "type": "lab.flow.Loop",
+                      "templateParameters": [
+                        {
+                          "trial": "textInput",
+                          "": ""
+                        }
+                      ],
+                      "sample": {
+                        "mode": "draw-shuffle",
+                        "n": "50"
+                      },
+                      "files": {},
+                      "responses": {},
+                      "parameters": {
+                        "convertType": "hiragana",
+                        "phaseDuration": "120000",
+                        "trialDuration": "Never",
+                        "prompt": "キーボードを押すと文字が入力されます。 回答の入力を終えたら，「Enter」を押すか，「次ヘ」ボタンを押してください。 新しい入力欄が表示されます。",
+                        "showButton": true,
+                        "enterEndsTrial": true
+                      },
+                      "messageHandlers": {},
+                      "title": "testPhase",
+                      "timeout": "${this.parameters.phaseDuration}",
+                      "notes": "半角入力字にひらがなまたはカタカナを画面に表示するテンプレートです。\n\n・convertType：入力された文字の変換先の指定\n　　hiragana→ひらがな入力\n   　 katakana→カタカナ入力\n・phaseDuration：文字入力段階の制限時間\n・trialDuration：個々の試行の制限時間\n・showButton：次へのボタン表示するかどうか*\n・prompt: 教示**\n\n*「次へ」ボタンを表示させる場合は，制限時間まで新しい入力が可能\n**手がかり再生などのpromptを変化させたい場合は「template」のチェックを外し,Templateパラメータのpromptを削除し，contentにpromptという名前で変数を追加したり，不要なパラメータを削除してください。\n\ne.g.30秒の自由再生\nphaseDuration = 30000\nshowButton = true\ntrialDuration = Never\n\ne.g. 6試行で各試行5秒の制限時間の手がかり再生（手がかりは別途parametersとして設定する必要あり。）\nphaseDuration = 30000\nshowButton = false\ntrialDuration = 5000\n\n*****************************************\nJapanseTextInput.json\nCopyright(c) 2020 Masanori Kobayashi\nReleased under the MIT license\n\nInclude WanaKana.js \nhttps:\u002F\u002Fwanakana.com\u002F\nCopyright (c) 2013 WaniKani Community Github\nReleased under the MIT license\n*****************************************",
+                      "shuffleGroups": [],
+                      "template": {
+                        "type": "lab.html.Page",
+                        "items": [
+                          {
+                            "required": true,
+                            "type": "text",
+                            "title": "先ほど覚えた単語を思い出し，ひらがなで入力してください（制限時間：120秒）。",
+                            "content": "${this.parameters.prompt}"
+                          },
+                          {
+                            "required": true,
+                            "type": "html",
+                            "content": "\u003Cdiv class=\"w-m alert content-horizontal-center\"\u003E\u003Cspan style = \"animation: blink 0.5s linear infinite alternate;\" id=\"inputWindow\"\u003E|\u003C\u002Fspan\u003E\u003C\u002Fdiv\u003E",
+                            "name": ""
+                          },
+                          {
+                            "required": true,
+                            "type": "divider"
+                          },
+                          {
+                            "required": true,
+                            "type": "html",
+                            "content": "${this.parameters.showButton? '\u003Cdiv class=\"content-horizontal-center\"\u003E\u003Cbutton\u003E次へ\u003C\u002Fbutton\u003E\u003C\u002Fdiv\u003E' : ''}",
+                            "name": ""
+                          }
+                        ],
+                        "scrollTop": true,
+                        "submitButtonText": "次へ",
+                        "submitButtonPosition": "hidden",
+                        "files": {},
+                        "responses": {},
+                        "parameters": {},
+                        "messageHandlers": {
+                          "before:prepare": function anonymous(
 ) {
-let inputArray =['']
+let inputArray =[]
 let text;
 
 //初期カーソルの点滅用のCSSを追加
@@ -639,81 +799,70 @@ document.getElementsByTagName('head')[0].appendChild(css);
 
 //キー入力時
 this.options.events['keydown'] = function(e) {
-  if(inputArray.length == 1)
+  //点滅をやめる
+  if(inputArray.length <= 0)
   {
-    document.getElementById('inputWindow').style.animation = '';
+    document.getElementById('inputWindow').style = ' ';
   }
-  if(e.key == 'Backspace' | e.key.length == 1)
-  {
-    if(e.key == 'Backspace'){
-        inputArray.pop();
-
-    }
-    else if(e.key.length == 1){
-      if(inputArray[1] == '|')
+  //削除時
+  if(e.key == 'Backspace' || e.key == 'Delete'){
+      //1文字のみの時はカーソルを表示
+      if(inputArray.length == 1)
       {
-        inputArray.pop()
+        inputArray =['|']
+        document.getElementById('inputWindow').style = 'animation: blink 0.5s linear infinite alternate;';
       }
-      inputArray.push(e.key);
-    }
-    convertText = inputArray.join('');
-    if(this.parameters.convertType == 'katakana')
-    {
-      convertText = wanakana.toKatakana(convertText,{customKanaMapping: {n: 'n', nn:'ン'}});
-    }
-    else
-    {
-      convertText = wanakana.toHiragana(convertText,{customKanaMapping: {n: 'n', nn:'ん'}});
-    }
-    document.getElementById('inputWindow').textContent = convertText;
-    this.data.response = convertText;
+      else{
+        inputArray.pop();
+      }
   }
+
+  //押されたキーが1文字の時
+  else if(e.key.length == 1){
+    //最後まで消していた場合
+    if(inputArray[0] == '|')
+    {
+      inputArray.pop()
+      document.getElementById('inputWindow').style = ' ';
+    }
+    inputArray.push(e.key);
+  }
+
+  //Enterの場合は終了
+  else if(this.parameters.enterEndsTrial == true && e.key == 'Enter')
+  {
+    this.end();
+  }
+  //配列を1つにまとめる
+  convertText = inputArray.join('');
+
+  //アルファベットをひらがな/カタカナに変換
+  if(this.parameters.convertType == 'katakana')
+  {
+    convertText = wanakana.toKatakana(convertText, {customKanaMapping: { n: 'n', nn: 'ン'}});
+  }
+  else if(this.parameters.convertType == 'hiragana')
+  {
+    convertText = wanakana.toHiragana(convertText, {customKanaMapping: { n: 'n', nn: 'ん'}});
+  }
+  //変換したテキストを表示
+  document.getElementById('inputWindow').textContent = convertText;
+  //変換したテキストを反応として保存
+  this.data.response = convertText;
 }
 }
-                      },
-                      "title": "testTrial",
-                      "timeout": "${this.parameters.trialDuration}"
+                        },
+                        "title": "testTrial",
+                        "timeout": "${this.parameters.trialDuration}"
+                      }
                     }
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "type": "lab.canvas.Screen",
-          "content": [
-            {
-              "type": "i-text",
-              "left": 0,
-              "top": -25,
-              "angle": 0,
-              "width": 576,
-              "height": 162,
-              "stroke": null,
-              "strokeWidth": 1,
-              "fill": "tomato",
-              "text": "実験終了です！\nご協力ありがとうございました！\n\nウィンドウを閉じて終了してください。",
-              "fontStyle": "normal",
-              "fontWeight": "normal",
-              "fontSize": 32,
-              "fontFamily": "sans-serif",
-              "lineHeight": 1.16,
-              "textAlign": "center"
+                  ]
+                }
+              ]
             }
-          ],
-          "viewport": [
-            800,
-            600
-          ],
-          "files": {},
-          "responses": {},
-          "parameters": {},
-          "messageHandlers": {},
-          "title": "Thanks",
-          "timeout": "1000"
-        }
-      ]
+          }
+        ]
+      }
     }
   ]
 })
