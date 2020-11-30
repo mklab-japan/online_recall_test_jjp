@@ -19,3 +19,23 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+This  include lab.js 
+https://github.com/FelixHenninger/lab.js
+Copyright (c) 2020 Felix Henninger
+Released under the Apache License
+
+This  include WanaKana.js 
+https://wanakana.com/
+Copyright (c) 2013 WaniKani Community Github
+Released under the MIT license
+
+This include japaneseTextInputForLab.js
+https://github.com/mklab-japan/japaneseTextInputForLab.js
+Copyright (c) 2020 Masanori Kobayashi
+Released under the MIT License
+
+This include japaneseTextInputForJsPsych
+https://github.com/mklab-japan/japaneseTextInputForJsPsych
+Copyright (c) 2020 Masanori Kobayashi
+Released under the MIT License
