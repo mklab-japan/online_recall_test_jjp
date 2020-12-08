@@ -25,6 +25,11 @@ https://github.com/FelixHenninger/lab.js
 Copyright (c) 2020 Felix Henninger
 Released under the Apache License
 
+This include jsPsych.js
+https://github.com/jspsych/jsPsych/
+Copyright (c) 2014-2018 Joshua R. de Leeuw
+Released under the MIT License (MIT)
+
 This  include WanaKana.js 
 https://wanakana.com/
 Copyright (c) 2013 WaniKani Community Github
