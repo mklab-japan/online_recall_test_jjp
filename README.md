@@ -9,7 +9,7 @@
 ## デモについて
 デモは以下のURLからご覧いただけます。実験1，実験2ともに試行数を減らして簡略化したものです。
 
-https://mklab-japan.github.io/online_recall_test_jpr/
+https://mklab-japan.github.io/online_recall_test_jjp/
 
 ## 引用について
 掲載されたプログラムを利用される場合は以下の文献の引用をお願いします。
