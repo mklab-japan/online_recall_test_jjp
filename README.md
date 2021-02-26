@@ -15,4 +15,4 @@ https://mklab-japan.github.io/online_recall_test_jjp/
 掲載されたプログラムを利用される場合は以下の文献の引用をお願いします。
 
 
-小林正法　（印刷中）　再生テストに基づく記憶現象のオンライン実験による再現 心理学研究
+小林正法 (2021) 再生テストに基づく記憶現象のオンライン実験による再現 心理学研究 Advance online publication.  https://doi.org/10.4992/jjpsy.92.20213
